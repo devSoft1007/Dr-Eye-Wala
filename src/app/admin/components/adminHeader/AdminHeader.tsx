@@ -5,6 +5,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";   
 import Link from "next/link";
+import { signOut } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 
 // Define routes array
 const adminRoutes = [
@@ -15,6 +17,22 @@ const adminRoutes = [
 ];
 
 export default function AdminHeader() {
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        try {
+            const { err } = await signOut();
+            if (err) {
+                console.error('Error signing out:', err);
+            } else {
+                // Redirect to login page after successful logout
+                router.push('/admin-auth/login');
+            }
+        } catch (error) {
+            console.error('Error during logout:', error);
+        }
+    };
+
     return (
         <header className="w-full bg-white dark:bg-gray-950 shadow-sm px-4 py-2 flex items-center justify-between sticky top-0 z-50">
             {/* Left: Logo */}
@@ -72,8 +90,11 @@ export default function AdminHeader() {
                                 <Link href={route.href}>{route.label}</Link>
                             </DropdownMenuItem>
                         ))}
-                        <DropdownMenuItem asChild>
-                            <Link href="/logout" className="text-red-600">Logout</Link>
+                        <DropdownMenuItem 
+                            onClick={handleLogout}
+                            className="text-red-600 cursor-pointer"
+                        >
+                            Logout
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

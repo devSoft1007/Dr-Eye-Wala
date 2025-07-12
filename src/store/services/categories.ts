@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { createClient } from '@/utils/supabase/client'
 
 // Add your Supabase anon key
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -8,10 +9,25 @@ export const categoryApi = createApi({
   reducerPath: 'categoryApi',
   baseQuery: fetchBaseQuery({ 
     baseUrl: `${SUPABASE_URL}/functions/v1`,
-    prepareHeaders: (headers) => {
+    prepareHeaders: async (headers) => {
+      // Get the current user session
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      
       // Add the required headers for Supabase
       headers.set('apikey', SUPABASE_ANON_KEY as string)
-      headers.set('Authorization', `Bearer ${SUPABASE_ANON_KEY}`)
+      
+      // Use user token if available, otherwise use anon key
+      const token = session?.access_token
+      headers.set('Authorization', `Bearer ${token}`)
+      
+      // Optional: Add user info for debugging
+      if (session?.user) {
+        console.log('RTK Query using authenticated user token for:', session.user.email)
+      } else {
+        console.log('RTK Query using anon key - no authenticated user')
+      }
+      
       return headers
     },
    }),

@@ -6,21 +6,73 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Eye, EyeOff, Mail, Lock, User, Github, Chrome } from 'lucide-react';
-import { useLoginSignUpForm } from '@/hooks/admin/useLoginSignupForm';
+import { useLoginSignUpForm, LoginFormData, SignupFormData } from '@/hooks/admin/useLoginSignupForm';
+import { signInWithEmail, signUpWithEmail } from '@/utils/supabase/client';
+import { useRouter } from 'next/navigation';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const router = useRouter();
+  
   const { register, handleSubmit, formState: { errors }, reset } = useLoginSignUpForm(isLogin);
 
-  const onSubmit = (data) => {
-    console.log('Form submitted:', data);
-    // Handle API logic here
+  const onSubmit = async (data: LoginFormData | SignupFormData) => {
+    setIsLoading(true);
+    setAuthError(null);
+    setSuccessMessage(null);
+
+    try {
+      if (isLogin) {
+        // Handle login
+        const loginData = data as LoginFormData;
+        const { data: authData, err } = await signInWithEmail(loginData.email, loginData.password);
+        
+        if (err) {
+          setAuthError(err.message);
+        } else if (authData.user) {
+          setSuccessMessage('Login successful! Redirecting...');
+          // Redirect to admin dashboard
+          setTimeout(() => {
+            router.push('/admin');
+          }, 1000);
+        }
+      } else {
+        // Handle signup
+        const signupData = data as SignupFormData;
+        const { data: authData, err } = await signUpWithEmail(
+          signupData.email, 
+          signupData.password, 
+          signupData.name
+        );
+        
+        if (err) {
+          setAuthError(err.message);
+        } else if (authData.user) {
+          setSuccessMessage('Account created successfully! Please check your email to verify your account.');
+          // Optionally switch to login mode after successful signup
+          setTimeout(() => {
+            setIsLogin(true);
+            reset();
+          }, 2000);
+        }
+      }
+    } catch (error) {
+      setAuthError('An unexpected error occurred. Please try again.');
+      console.error('Auth error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const toggleMode = () => {
     setIsLogin(!isLogin);
+    setAuthError(null);
+    setSuccessMessage(null);
     reset();
   };
 
@@ -47,6 +99,20 @@ export default function AuthPage() {
         </CardHeader>
 
         <CardContent className="space-y-6">
+          {/* Global Auth Error */}
+          {authError && (
+            <Alert className="bg-red-500/20 border-red-500/30">
+              <AlertDescription className="text-red-200">{authError}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Success Message */}
+          {successMessage && (
+            <Alert className="bg-green-500/20 border-green-500/30">
+              <AlertDescription className="text-green-200">{successMessage}</AlertDescription>
+            </Alert>
+          )}
+
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {!isLogin && (
               <div className="space-y-2">
@@ -61,7 +127,7 @@ export default function AuthPage() {
                     className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50"
                   />
                 </div>
-                {errors.name && (
+                {!isLogin && 'name' in errors && errors.name && (
                   <Alert className="bg-red-500/20 border-red-500/30">
                     <AlertDescription className="text-red-200">{errors.name.message}</AlertDescription>
                   </Alert>
@@ -134,7 +200,7 @@ export default function AuthPage() {
                     {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                {errors.confirmPassword && (
+                {!isLogin && 'confirmPassword' in errors && errors.confirmPassword && (
                   <Alert className="bg-red-500/20 border-red-500/30">
                     <AlertDescription className="text-red-200">{errors.confirmPassword.message}</AlertDescription>
                   </Alert>
@@ -144,9 +210,17 @@ export default function AuthPage() {
 
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 transition-all duration-200 transform hover:scale-105"
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              {isLogin ? 'Sign In' : 'Create Account'}
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  {isLogin ? 'Signing In...' : 'Creating Account...'}
+                </div>
+              ) : (
+                isLogin ? 'Sign In' : 'Create Account'
+              )}
             </Button>
           </form>
 

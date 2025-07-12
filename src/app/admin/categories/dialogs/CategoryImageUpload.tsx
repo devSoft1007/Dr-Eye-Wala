@@ -103,6 +103,7 @@ export function CategoryImageUpload({
   // Get display image URL - priority: imageUrl > previewUrl
   const displayImageUrl = imageUrl || previewUrl;
 
+
   return (
     <div className="space-y-3">
       <div 

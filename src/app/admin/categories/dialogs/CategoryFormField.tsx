@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Label } from "@/components/ui/label";
 
 interface CategoryFormFieldProps {
@@ -8,7 +8,7 @@ interface CategoryFormFieldProps {
   className?: string;
 }
 
-export function CategoryFormField({ 
+function CategoryFormFieldComponent({ 
   label, 
   htmlFor, 
   children, 
@@ -21,3 +21,5 @@ export function CategoryFormField({
     </div>
   );
 }
+
+export const CategoryFormField = memo(CategoryFormFieldComponent);

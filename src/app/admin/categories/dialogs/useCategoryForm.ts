@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { Category, Option, Subcategory } from "@/types/category";
 import { defaultFormValues } from "./categoryConstants";
+import { ImageUrls } from "@/enums/enums";
 
 export function useCategoryForm(
   isOpen: boolean,
@@ -101,6 +102,7 @@ export function useCategoryForm(
     if (!isEditMode) {
       setPendingImageFile(file);
     }
+    formValues.image_url = `/${ImageUrls.CategoryImages}/${file.name}`
   };
 
   return {

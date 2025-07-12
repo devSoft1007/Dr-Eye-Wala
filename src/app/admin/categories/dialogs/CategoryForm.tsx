@@ -39,7 +39,7 @@ export function CategoryForm({
   onImageRemove,
   onFileSelect,
 }: CategoryFormProps) {
-    console.log("CategoryForm rendered with values:", formValues);
+  
   return (
     <form onSubmit={onSubmit} className="grid grid-cols-2 gap-6">
       <CategoryFormField label="Name" htmlFor="category-name">

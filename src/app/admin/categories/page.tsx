@@ -76,28 +76,26 @@ export default function CategoryManagement() {
 
   // Save category (handles both add and edit)
   const handleSaveCategory = async (categoryData: Partial<Category>, pendingImageFile?: File | null) => {
-    console.log('categoryData', categoryData)
     try {
       // fire the RTK Query mutation and unwrap the result
-      // const newCategory = await addCategory(categoryData).unwrap();
-      
-      // // Handle pending image upload for new categories
-      // if (pendingImageFile && newCategory.id) {
-      //   try {
-      //     const uploadResult = await uploadPendingCategoryImage(pendingImageFile, newCategory.id);
-          
-      //     if (uploadResult.publicUrl) {
-      //       // Update the category with the uploaded image URL using RTK Query
-      //       await updateCategory({
-      //         ...newCategory,
-      //         image_url: uploadResult.publicUrl
-      //       }).unwrap();
-      //     }
-      //   } catch (uploadError) {
-      //     console.error("Failed to upload image:", uploadError);
-      //     // Category was created but image upload failed - could show a warning
-      //   }
-      // }
+      const newCategory = await addCategory(categoryData).unwrap();
+      // Handle pending image upload for new categories
+      if (pendingImageFile && newCategory.success) {
+        try {
+          const uploadResult = await uploadPendingCategoryImage(pendingImageFile, newCategory.data.id);
+          console.log('upload result', uploadResult)
+          if (uploadResult.publicUrl) {
+            // Update the category with the uploaded image URL using RTK Query
+            await updateCategory({
+              ...newCategory,
+              image_url: uploadResult.publicUrl
+            }).unwrap();
+          }
+        } catch (uploadError) {
+          console.error("Failed to upload image:", uploadError);
+          // Category was created but image upload failed - could show a warning
+        }
+      }
       
     } catch (err) {
       console.error("Failed to add category:", err);

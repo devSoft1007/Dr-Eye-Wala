@@ -1,3 +1,4 @@
+import { ImageUrls } from "@/enums/enums";
 import { Category, Option, Subcategory } from "@/types/category";
 
 export const subcategoryOptions: Option<Subcategory>[] = [
@@ -13,6 +14,6 @@ export const defaultFormValues: Partial<Category> & { subcategory: Option<Subcat
   parent_id: null,
   is_active: true,
   display_order: 1,
-  image_url: "/images/categories/placeholder.jpg",
+  image_url: `/${ImageUrls.CategoryImages}/placeholder.jpg`,
   subcategory: [],
 };

@@ -82,6 +82,7 @@ export default function CategoryManagement() {
       // Handle pending image upload for new categories
       if (pendingImageFile && newCategory.success) {
         try {
+          console.log('Pending image file:', pendingImageFile);
           const uploadResult = await uploadPendingCategoryImage(pendingImageFile, newCategory.data.id);
           console.log('upload result', uploadResult)
           if (uploadResult.publicUrl) {

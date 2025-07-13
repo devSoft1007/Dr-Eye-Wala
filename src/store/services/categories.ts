@@ -17,7 +17,6 @@ export const categoryApi = createApi({
       // Add the required headers for Supabase
       headers.set('apikey', SUPABASE_ANON_KEY as string)
       
-      // Use user token if available, otherwise use anon key
       const token = session?.access_token
       headers.set('Authorization', `Bearer ${token}`)
       
